@@ -1,10 +1,13 @@
 import express from "express";
 import { getPage, savePage } from "../controllers/cms.controller.js";
-import { verifyAdmin } from "../middleware/auth.middleware.js";
+import { verifyToken, verifyAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/:slug", getPage);           // public
-router.post("/", verifyAdmin, savePage); // admin
+// PUBLIC
+router.get("/:slug", getPage);
+
+// 🔐 ADMIN (TOKEN → ADMIN)
+router.post("/", verifyToken, verifyAdmin, savePage);
 
 export default router;
