@@ -1,17 +1,17 @@
 import express from "express";
 import {
-  createCourse,
   getCourses,
+  addCourse,
   updateCourse,
-  deleteCourse
+  deleteCourse,
 } from "../controllers/course.controller.js";
-import { verifyAdmin } from "../middleware/auth.middleware.js";
+import { verifyToken, verifyAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", verifyAdmin, createCourse);
-router.get("/", getCourses);
-router.put("/:id", verifyAdmin, updateCourse);
-router.delete("/:id", verifyAdmin, deleteCourse);
+router.get("/", verifyToken, verifyAdmin, getCourses);
+router.post("/", verifyToken, verifyAdmin, addCourse);
+router.put("/:id", verifyToken, verifyAdmin, updateCourse);
+router.delete("/:id", verifyToken, verifyAdmin, deleteCourse);
 
 export default router;
