@@ -1,20 +1,30 @@
 import Department from "../models/Department.js";
 
-// CREATE
+// ================= CREATE =================
 export const createDepartment = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, description } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ message: "Department name is required" });
+    // validation
+    if (!name || !description) {
+      return res
+        .status(400)
+        .json({ message: "Name and description are required" });
     }
 
+    // duplicate check
     const exists = await Department.findOne({ name: name.trim() });
     if (exists) {
-      return res.status(400).json({ message: "Department already exists" });
+      return res
+        .status(409)
+        .json({ message: "Department already exists" });
     }
 
-    const dept = await Department.create({ name: name.trim() });
+    const dept = await Department.create({
+      name: name.trim(),
+      description: description.trim(),
+    });
+
     res.status(201).json(dept);
   } catch (err) {
     console.error("Create Department Error:", err);
@@ -22,39 +32,60 @@ export const createDepartment = async (req, res) => {
   }
 };
 
-// READ
+// ================= READ =================
 export const getDepartments = async (req, res) => {
   try {
     const depts = await Department.find().sort({ createdAt: -1 });
-    res.json(depts);
+    res.status(200).json(depts);
   } catch (err) {
+    console.error("Fetch Departments Error:", err);
     res.status(500).json({ message: "Failed to fetch departments" });
   }
 };
 
-// UPDATE
+// ================= UPDATE =================
 export const updateDepartment = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, description } = req.body;
 
-    const dept = await Department.findByIdAndUpdate(
+    if (!name || !description) {
+      return res
+        .status(400)
+        .json({ message: "Name and description are required" });
+    }
+
+    const updatedDept = await Department.findByIdAndUpdate(
       req.params.id,
-      { name: name.trim() },
-      { new: true }
+      {
+        name: name.trim(),
+        description: description.trim(),
+      },
+      { new: true, runValidators: true }
     );
 
-    res.json(dept);
+    if (!updatedDept) {
+      return res.status(404).json({ message: "Department not found" });
+    }
+
+    res.status(200).json(updatedDept);
   } catch (err) {
+    console.error("Update Department Error:", err);
     res.status(500).json({ message: "Update failed" });
   }
 };
 
-// DELETE
+// ================= DELETE =================
 export const deleteDepartment = async (req, res) => {
   try {
-    await Department.findByIdAndDelete(req.params.id);
-    res.json({ message: "Department deleted" });
+    const deleted = await Department.findByIdAndDelete(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Department not found" });
+    }
+
+    res.status(200).json({ message: "Department deleted" });
   } catch (err) {
+    console.error("Delete Department Error:", err);
     res.status(500).json({ message: "Delete failed" });
   }
 };
