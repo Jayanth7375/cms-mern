@@ -5,13 +5,17 @@ import {
   updateDepartment,
   deleteDepartment
 } from "../controllers/department.controller.js";
-import { verifyAdmin } from "../middleware/auth.middleware.js";
+
+import { verifyToken, verifyAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", verifyAdmin, createDepartment);
-router.get("/", getDepartments); // public
-router.put("/:id", verifyAdmin, updateDepartment);
-router.delete("/:id", verifyAdmin, deleteDepartment);
+// 🔐 ADMIN PROTECTED
+router.post("/", verifyToken, verifyAdmin, createDepartment);
+router.put("/:id", verifyToken, verifyAdmin, updateDepartment);
+router.delete("/:id", verifyToken, verifyAdmin, deleteDepartment);
+
+// 🌍 PUBLIC (needed for dropdowns etc.)
+router.get("/", getDepartments);
 
 export default router;
