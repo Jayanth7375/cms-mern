@@ -3,55 +3,58 @@ import Department from "../models/Department.js";
 // CREATE
 export const createDepartment = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name } = req.body;
 
-    const exists = await Department.findOne({ name });
+    if (!name) {
+      return res.status(400).json({ message: "Department name is required" });
+    }
+
+    const exists = await Department.findOne({ name: name.trim() });
     if (exists) {
       return res.status(400).json({ message: "Department already exists" });
     }
 
-    const dept = await Department.create({ name, description });
+    const dept = await Department.create({ name: name.trim() });
     res.status(201).json(dept);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Create Department Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// READ ALL
+// READ
 export const getDepartments = async (req, res) => {
   try {
     const depts = await Department.find().sort({ createdAt: -1 });
     res.json(depts);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Failed to fetch departments" });
   }
 };
 
 // UPDATE
 export const updateDepartment = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, description } = req.body;
+    const { name } = req.body;
 
     const dept = await Department.findByIdAndUpdate(
-      id,
-      { name, description },
+      req.params.id,
+      { name: name.trim() },
       { new: true }
     );
 
     res.json(dept);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Update failed" });
   }
 };
 
 // DELETE
 export const deleteDepartment = async (req, res) => {
   try {
-    const { id } = req.params;
-    await Department.findByIdAndDelete(id);
+    await Department.findByIdAndDelete(req.params.id);
     res.json({ message: "Department deleted" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Delete failed" });
   }
 };
