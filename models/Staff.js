@@ -2,15 +2,34 @@ import mongoose from "mongoose";
 
 const staffSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    role: { type: String, required: true },
-    departmentId: {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    role: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
       required: true
     },
-    email: String,
-    phone: String
+
+    email: {
+      type: String,
+      lowercase: true,
+      trim: true
+    },
+
+    phone: {
+      type: String,
+      trim: true
+    }
   },
   { timestamps: true }
 );
