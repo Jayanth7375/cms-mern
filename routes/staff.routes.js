@@ -5,13 +5,18 @@ import {
   updateStaff,
   deleteStaff,
 } from "../controllers/staff.controller.js";
-import { verifyAdmin } from "../middleware/auth.middleware.js";
+
+import {
+  verifyToken,
+  verifyAdmin,
+} from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", verifyAdmin, getStaffs);
-router.post("/", verifyAdmin, createStaff);
-router.put("/:id", verifyAdmin, updateStaff);
-router.delete("/:id", verifyAdmin, deleteStaff);
+// ✅ MUST HAVE verifyToken FIRST
+router.get("/", verifyToken, verifyAdmin, getStaffs);
+router.post("/", verifyToken, verifyAdmin, createStaff);
+router.put("/:id", verifyToken, verifyAdmin, updateStaff);
+router.delete("/:id", verifyToken, verifyAdmin, deleteStaff);
 
 export default router;
