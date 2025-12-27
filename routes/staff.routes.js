@@ -1,18 +1,17 @@
 import express from "express";
 import {
+  createStaff,
   getStaffs,
-  addStaff,
   updateStaff,
-  deleteStaff
+  deleteStaff,
 } from "../controllers/staff.controller.js";
-
-import { verifyToken, verifyAdmin } from "../middleware/auth.middleware.js";
+import { verifyAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", verifyToken, verifyAdmin, getStaffs);
-router.post("/", verifyToken, verifyAdmin, addStaff);
-router.put("/:id", verifyToken, verifyAdmin, updateStaff);
-router.delete("/:id", verifyToken, verifyAdmin, deleteStaff);
+router.get("/", verifyAdmin, getStaffs);
+router.post("/", verifyAdmin, createStaff);
+router.put("/:id", verifyAdmin, updateStaff);
+router.delete("/:id", verifyAdmin, deleteStaff);
 
 export default router;
