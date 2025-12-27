@@ -2,20 +2,23 @@ import express from "express";
 import {
   register,
   login,
-  createFaculty,
+  createFaculty
 } from "../controllers/auth.controller.js";
 
-import { verifyToken, verifyAdmin } from "../middleware/auth.middleware.js";
+import {
+  verifyToken,
+  verifyAdmin
+} from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// STUDENT
+// Student register
 router.post("/register", register);
 
-// ALL ROLES
+// Login (admin / student / faculty)
 router.post("/login", login);
 
-// ADMIN → CREATE FACULTY
+// Admin creates faculty
 router.post(
   "/create-faculty",
   verifyToken,

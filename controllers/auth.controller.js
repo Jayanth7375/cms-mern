@@ -2,9 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-/* =====================
-   REGISTER (STUDENT)
-   ===================== */
+/* ================= STUDENT REGISTER ================= */
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -29,9 +27,7 @@ export const register = async (req, res) => {
   }
 };
 
-/* =====================
-   LOGIN (ALL ROLES)
-   ===================== */
+/* ================= LOGIN (ADMIN / STUDENT / FACULTY) ================= */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -59,7 +55,6 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        department: user.department || "",
       },
     });
   } catch (err) {
@@ -67,20 +62,18 @@ export const login = async (req, res) => {
   }
 };
 
-/* =========================
-   CREATE FACULTY (ADMIN)
-   ========================= */
+/* ================= CREATE FACULTY (ADMIN ONLY) ================= */
 export const createFaculty = async (req, res) => {
   try {
     const { name, email, password, department } = req.body;
 
     if (!name || !email || !password || !department) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "All fields required" });
     }
 
     const exists = await User.findOne({ email });
     if (exists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "Faculty already exists" });
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -98,7 +91,6 @@ export const createFaculty = async (req, res) => {
       faculty,
     });
   } catch (err) {
-    console.error("CREATE FACULTY ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };
