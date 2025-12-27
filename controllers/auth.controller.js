@@ -2,21 +2,25 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// REGISTER (STUDENT)
+/* =====================
+   REGISTER (STUDENT)
+   ===================== */
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: "Email already exists" });
+    if (exists) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    await User.create({
       name,
       email,
       password: hashed,
-      role: "student"
+      role: "student",
     });
 
     res.status(201).json({ message: "Student registered successfully" });
@@ -25,16 +29,22 @@ export const register = async (req, res) => {
   }
 };
 
-// LOGIN (ADMIN + STUDENT)
+/* =====================
+   LOGIN (ALL ROLES)
+   ===================== */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(400).json({ message: "Invalid credentials" });
+    if (!match) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -48,10 +58,47 @@ export const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+        department: user.department || "",
+      },
     });
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/* =========================
+   CREATE FACULTY (ADMIN)
+   ========================= */
+export const createFaculty = async (req, res) => {
+  try {
+    const { name, email, password, department } = req.body;
+
+    if (!name || !email || !password || !department) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const faculty = await User.create({
+      name,
+      email,
+      password: hashed,
+      role: "faculty",
+      department,
+    });
+
+    res.status(201).json({
+      message: "Faculty created successfully",
+      faculty,
+    });
+  } catch (err) {
+    console.error("CREATE FACULTY ERROR:", err);
     res.status(500).json({ message: err.message });
   }
 };
