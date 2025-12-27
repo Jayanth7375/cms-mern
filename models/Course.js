@@ -1,19 +1,23 @@
 import mongoose from "mongoose";
 
-const courseSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
+const courseSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    department: {
+      type: String, // ✅ STRING, not ObjectId
+      required: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+      default: "",
+    },
   },
-  departmentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Department",
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+  { timestamps: true }
+);
 
 export default mongoose.model("Course", courseSchema);
