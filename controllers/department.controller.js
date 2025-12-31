@@ -3,25 +3,26 @@ import Department from "../models/Department.js";
 // ================= CREATE =================
 export const createDepartment = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, code, description } = req.body;
 
     // validation
-    if (!name || !description) {
+    if (!name || !code || !description) {
       return res
         .status(400)
-        .json({ message: "Name and description are required" });
+        .json({ message: "Name, Code and description are required" });
     }
 
     // duplicate check
-    const exists = await Department.findOne({ name: name.trim() });
+    const exists = await Department.findOne({ $or: [{ name: name.trim() }, { code: code.trim() }] });
     if (exists) {
       return res
         .status(409)
-        .json({ message: "Department already exists" });
+        .json({ message: "Department name or code already exists" });
     }
 
     const dept = await Department.create({
       name: name.trim(),
+      code: code.trim(),
       description: description.trim(),
     });
 
@@ -46,18 +47,19 @@ export const getDepartments = async (req, res) => {
 // ================= UPDATE =================
 export const updateDepartment = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, code, description } = req.body;
 
-    if (!name || !description) {
+    if (!name || !code || !description) {
       return res
         .status(400)
-        .json({ message: "Name and description are required" });
+        .json({ message: "Name, Code and description are required" });
     }
 
     const updatedDept = await Department.findByIdAndUpdate(
       req.params.id,
       {
         name: name.trim(),
+        code: code.trim(),
         description: description.trim(),
       },
       { new: true, runValidators: true }

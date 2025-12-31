@@ -1,11 +1,14 @@
 import User from "../models/User.js";
+import Student from "../models/Student.js";
+import Staff from "../models/Staff.js";
+import Course from "../models/Course.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 /* ================= STUDENT REGISTER ================= */
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, department } = req.body;
 
     const exists = await User.findOne({ email });
     if (exists) {
@@ -14,11 +17,24 @@ export const register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    await User.create({
+    const newUser = await User.create({
       name,
       email,
       password: hashed,
       role: "student",
+      department, // Save User Department
+    });
+
+    // AUTO-ENROLL: Find all courses for this department
+    const deptCourses = await Course.find({ department });
+    const courseIds = deptCourses.map(c => c._id);
+
+    await Student.create({
+      user: newUser._id,
+      name: newUser.name,
+      rollNo: "TEMP" + Date.now(), // Temporary Roll No
+      department: department || "General",
+      courses: courseIds, // Auto-enroll in all dept courses
     });
 
     res.status(201).json({ message: "Student registered successfully" });
@@ -32,7 +48,10 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+department");
+    console.log("DEBUG LOGIN: Found User:", user);
+    console.log("DEBUG LOGIN: Dept Field:", user ? user.department : "N/A");
+
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -43,7 +62,11 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      {
+        id: user._id,
+        role: user.role,
+        department: user.department || null // ✅ Include department 
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -55,6 +78,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        department: user.department, // Send to frontend too
       },
     });
   } catch (err) {
@@ -78,7 +102,7 @@ export const createFaculty = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const faculty = await User.create({
+    const newUser = await User.create({
       name,
       email,
       password: hashed,
@@ -86,9 +110,18 @@ export const createFaculty = async (req, res) => {
       department,
     });
 
+    const newStaff = await Staff.create({
+      user: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: "Faculty",
+      department: department,
+      phone: "0000000000", // Default phone
+    });
+
     res.status(201).json({
       message: "Faculty created successfully",
-      faculty,
+      faculty: newUser,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

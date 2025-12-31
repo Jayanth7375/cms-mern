@@ -1,4 +1,6 @@
 import Staff from "../models/Staff.js";
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
 
 /* GET ALL STAFF */
 export const getStaffs = async (req, res) => {
@@ -7,6 +9,16 @@ export const getStaffs = async (req, res) => {
     res.json(staffs);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch staff" });
+  }
+};
+
+/* PUBLIC: Get Staff List (No sensitive info) */
+export const getPublicStaff = async (req, res) => {
+  try {
+    const staff = await Staff.find().select("name department role title email");
+    res.json(staff);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -19,12 +31,22 @@ export const createStaff = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const exists = await Staff.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "Staff already exists" });
+    // Check if User exists for auth
+    let user = await User.findOne({ email });
+    if (!user) {
+      // Create default user for this staff
+      const hashed = await bcrypt.hash("Staff@123", 10);
+      user = await User.create({
+        name,
+        email,
+        password: hashed,
+        role: "faculty", // Default role for staff created here
+        department,
+      });
     }
 
     const staff = await Staff.create({
+      user: user._id,
       name,
       role,
       department,

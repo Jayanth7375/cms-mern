@@ -14,7 +14,9 @@ import {
 const router = express.Router();
 
 // PUBLIC READ
-router.get("/", verifyToken, verifyAdmin, getDepartments);
+// PUBLIC READ
+router.get("/", getDepartments);
+router.get("/public", getDepartments);
 
 // ADMIN ONLY
 router.post("/", verifyToken, verifyAdmin, createDepartment);

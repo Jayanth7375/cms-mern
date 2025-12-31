@@ -9,6 +9,10 @@ import { verifyToken, verifyAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
+// PUBLIC
+router.get("/public", getCourses);
+
+// ADMIN PROTECTED
 router.get("/", verifyToken, verifyAdmin, getCourses);
 router.post("/", verifyToken, verifyAdmin, addCourse);
 router.put("/:id", verifyToken, verifyAdmin, updateCourse);

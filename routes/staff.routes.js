@@ -4,6 +4,7 @@ import {
   getStaffs,
   updateStaff,
   deleteStaff,
+  getPublicStaff
 } from "../controllers/staff.controller.js";
 
 import {
@@ -13,7 +14,10 @@ import {
 
 const router = express.Router();
 
-// ✅ MUST HAVE verifyToken FIRST
+// PUBLIC
+router.get("/public", getPublicStaff);
+
+// ADMIN PROTECTED
 router.get("/", verifyToken, verifyAdmin, getStaffs);
 router.post("/", verifyToken, verifyAdmin, createStaff);
 router.put("/:id", verifyToken, verifyAdmin, updateStaff);

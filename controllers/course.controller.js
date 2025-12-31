@@ -16,7 +16,7 @@ export const getCourses = async (req, res) => {
 /* ADD COURSE (ADMIN ONLY) */
 export const addCourse = async (req, res) => {
   try {
-    const { name, department, description } = req.body;
+    const { name, department, description, faculty } = req.body; // Added faculty
 
     if (!name || !department) {
       return res.status(400).json({ message: "Name and department required" });
@@ -31,6 +31,7 @@ export const addCourse = async (req, res) => {
       name,
       department,      // ✅ STRING (department name)
       description: description || "",
+      faculty: faculty || null, // ✅ Assign Faculty ID
     });
 
     res.status(201).json(course);
@@ -45,7 +46,7 @@ export const updateCourse = async (req, res) => {
   try {
     const course = await Course.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      req.body, // faculty is included in body
       { new: true }
     );
 
@@ -58,9 +59,14 @@ export const updateCourse = async (req, res) => {
 /* DELETE COURSE */
 export const deleteCourse = async (req, res) => {
   try {
-    await Course.findByIdAndDelete(req.params.id);
+    console.log("Deleting Course ID:", req.params.id);
+    const deleted = await Course.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: "Course not found" });
+    }
     res.json({ message: "Course deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Delete failed" });
+    console.error("DELETE COURSE ERROR:", err);
+    res.status(500).json({ message: "Delete failed: " + err.message });
   }
 };

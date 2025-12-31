@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 
-// VERIFY TOKEN
+/* =========================
+   BASE TOKEN VERIFICATION
+========================= */
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -12,17 +14,45 @@ export const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // ✅ SET USER
+    req.user = decoded; // { id, role, department, iat, exp }
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
 
-// VERIFY ADMIN
+/* =========================
+   ADMIN ACCESS
+========================= */
 export const verifyAdmin = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Admin access denied" });
-  }
-  next();
+  verifyToken(req, res, () => {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Admin access denied" });
+    }
+    next();
+  });
+};
+
+/* =========================
+   FACULTY ACCESS  ✅ NEW
+========================= */
+export const verifyFaculty = (req, res, next) => {
+  verifyToken(req, res, () => {
+    if (req.user.role !== "faculty") {
+      return res.status(403).json({ message: "Faculty access denied" });
+    }
+    next();
+  });
+};
+
+/* =========================
+   STUDENT ACCESS (FOR LATER)
+========================= */
+export const verifyStudent = (req, res, next) => {
+  verifyToken(req, res, () => {
+    if (req.user.role !== "student") {
+      return res.status(403).json({ message: "Student access denied" });
+    }
+    next();
+  });
 };

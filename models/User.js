@@ -14,12 +14,7 @@ const userSchema = new mongoose.Schema(
       default: "student",
     },
 
-    department: {
-      type: String,
-      required: function () {
-        return this.role === "faculty";
-      },
-    },
+    department: { type: String },
   },
   { timestamps: true }
 );
